@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const Book = require('./models/book');
+const booksRoutes = require('./routes/books');
+
 
 
 mongoose.connect('mongodb+srv://JeanCalude:1234@cluster-p7.bcrdjse.mongodb.net/Books?retryWrites=true&w=majority',
@@ -19,20 +20,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.post('/api/stuff', (req, res, next) => {
-  delete req.body._id;
-  const book = new Book({
-    ...req.body
-  });
-  book.save()
-    .then(() => res.status(201).json({ message: 'Objet enregistré !'}))
-    .catch(error => res.status(400).json({ error }));
-});
-
-app.get('/api/stuff', (req, res, next) => {
-  Book.find()
-    .then(books => res.status(200).json(books))
-    .catch(error => res.status(400).json({ error }));
-});
+app.use('/api/books', booksRoutes);
 
 module.exports = app;
