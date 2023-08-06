@@ -1,7 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const booksRoutes = require('./routes/books');
 
+const booksRoutes = require('./routes/books');
+const userRoutes = require('./routes/user');
 
 
 mongoose.connect('mongodb+srv://JeanCalude:1234@cluster-p7.bcrdjse.mongodb.net/Books?retryWrites=true&w=majority',
@@ -21,5 +22,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/api/books', booksRoutes);
+app.use('/api/stuff', stuffRoutes);
+app.use('/api/auth', userRoutes);
 
 module.exports = app;
