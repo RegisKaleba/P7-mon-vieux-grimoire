@@ -1,4 +1,4 @@
-const Book = require('../models/Book');
+const Book = require('../models/book');
 
 const multerConfig = require('../middleware/multer-config');
 
@@ -59,11 +59,16 @@ exports.getAllBooks = (req, res, next) => {
       .catch(error => res.status(400).json({ error }));
   };
 
-  exports.getBestRatingBooks = (req, res, next) => {
-    Book.find().sort({ averageRating: -1 })
-        .then(books => res.status(200).json([books[0], books[1], books[2]]))
-        .catch(error => res.status(400).json({ error }));
-};
+exports.getBestRatingBooks = (req, res, next) => {
+    Book.find()
+      .sort({ averageRating: -1 })
+      .then(books => {
+        // Sélectionnez les trois premiers éléments (ou le nombre souhaité) du tableau trié
+        const topRatedBooks = books.slice(0, 3);
+        res.status(200).json(topRatedBooks);
+      })
+      .catch(error => res.status(400).json({ error }));
+  };
 
 exports.postRatingBook = (req, res, next) => {
     const ratingObject = req.body;
