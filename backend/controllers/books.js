@@ -70,7 +70,7 @@ exports.getBestRatingBooks = (req, res, next) => {
       .catch(error => res.status(400).json({ error }));
   };
 
-exports.postRatingBook = (req, res, next) => {
+  exports.postRatingBook = (req, res, next) => {
     const ratingObject = req.body;
     ratingObject.grade = ratingObject.rating;
     delete ratingObject.rating;
@@ -85,14 +85,20 @@ exports.postRatingBook = (req, res, next) => {
                 Book.findOneAndUpdate({ _id: req.params.id }, {$push: {ratings: ratingObject}})
                     .then((book) => {
                         let averageRates = 0;
-                        for(i=0; i<book.ratings.length; i++){
+                        for(i = 0; i < book.ratings.length; i++) {
                             averageRates += book.ratings[i].grade;
                         };
-                        
-                        averageRates /= book.ratings.length;
-                        Math.round(averageRates);
 
-                        Book.findOneAndUpdate({ _id: req.params.id }, {$set: {averageRating: averageRates}, _id: req.params.id}, {new: true})
+                        averageRates /= book.ratings.length;
+
+                        console.log('Sum of grades:', averageRates * book.ratings.length); // Debug
+                        console.log('Number of ratings:', book.ratings.length); // Debug
+
+                        averageRates = Math.round(averageRates);
+
+                        console.log('Rounded average rating:', averageRates); // Debug
+
+                        Book.findOneAndUpdate({ _id: req.params.id }, {$set: {averageRating: averageRates}}, {new: true})
                             .then((book) => res.status(201).json(book))
                             .catch(error => res.status(401).json({ error }));
                     })
