@@ -15,9 +15,10 @@
 
 .BookItem img {
     border-radius: 5px;
-    object-fit: cover;
+    /*object-fit: cover;*/
 
 }
+
 .BookItem h2 {
     font-size: 18px;
     font-weight: 700;
