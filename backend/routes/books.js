@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
-const { upload, imgResize } = require('../middleware/multer-config'); // Importez upload et imgResize directement
-
+const { upload, imgResize } = require('../middleware/multer-config');
 const booksCtrl = require('../controllers/books');
 
 router.get('/bestrating', booksCtrl.getBestRatingBooks);

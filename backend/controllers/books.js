@@ -63,7 +63,7 @@ exports.getBestRatingBooks = (req, res, next) => {
     Book.find()
       .sort({ averageRating: -1 })
       .then(books => {
-        // Sélectionnez les trois premiers éléments (ou le nombre souhaité) du tableau trié
+        
         const topRatedBooks = books.slice(0, 3);
         res.status(200).json(topRatedBooks);
       })
@@ -71,39 +71,34 @@ exports.getBestRatingBooks = (req, res, next) => {
   };
 
   exports.postRatingBook = (req, res, next) => {
-    const ratingObject = req.body;
-    ratingObject.grade = ratingObject.rating;
-    delete ratingObject.rating;
+    const { userId, rating } = req.body;
 
     Book.findOne({ _id: req.params.id })
         .then(book => {
-            const userHaveNotRated = book.ratings.every(rating => rating.userId !== req.auth.userId)
-            if(userHaveNotRated === false) {
-                res.status(401).json({ message: 'Book already rated by user'});
-                return
-            } else {
-                Book.findOneAndUpdate({ _id: req.params.id }, {$push: {ratings: ratingObject}})
-                    .then((book) => {
-                        let averageRates = 0;
-                        for(i = 0; i < book.ratings.length; i++) {
-                            averageRates += book.ratings[i].grade;
-                        };
-
-                        averageRates /= book.ratings.length;
-
-                        console.log('Sum of grades:', averageRates * book.ratings.length); // Debug
-                        console.log('Number of ratings:', book.ratings.length); // Debug
-
-                        averageRates = Math.round(averageRates);
-
-                        console.log('Rounded average rating:', averageRates); // Debug
-
-                        Book.findOneAndUpdate({ _id: req.params.id }, {$set: {averageRating: averageRates}}, {new: true})
-                            .then((book) => res.status(201).json(book))
-                            .catch(error => res.status(401).json({ error }));
-                    })
-                    .catch(error => res.status(401).json({ error }));
+            const userHaveNotRated = book.ratings.every(rating => rating.userId !== userId);
+            if (!userHaveNotRated) {
+                res.status(401).json({ message: 'Book already rated by user' });
+                return;
             }
+
+            // Ajouter la nouvelle notation à la liste des notations
+            book.ratings.push({ userId, grade: rating });
+
+            // Calculer la nouvelle moyenne des notes
+            const totalRatings = book.ratings.length;
+            const totalGradeSum = book.ratings.reduce((sum, rating) => sum + rating.grade, 0);
+            const newAverageRating = totalGradeSum / totalRatings;
+
+            // Arrondir la moyenne des notes à l'entier supérieur
+            book.averageRating = Math.round(newAverageRating);
+
+            // Enregistrer les modifications dans la base de données
+            return book.save();
         })
-        .catch((error) => res.status(400).json({ error }));
+        .then(updatedBook => {
+            res.status(201).json(updatedBook);
+        })
+        .catch(error => {
+            res.status(400).json({ error });
+        });
 };
